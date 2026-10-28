@@ -1,0 +1,8 @@
+.deps/
+__pycache__/
+*.pyc
+hotkeys-before.json
+hotkeys-export-backup.json
+dist/
+aqtinstall.log
+native/*.dylib
