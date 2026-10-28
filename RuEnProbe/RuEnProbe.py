@@ -40,8 +40,6 @@ def _get_library():
     if _library is None:
         if sys.platform != 'darwin':
             raise RuntimeError('Поддерживается только macOS.')
-        if adsk.core.Application.get().version != '2706.1.14':
-            raise RuntimeError('Эта версия RuEn проверена только в Fusion 2706.1.14.')
         lib = ctypes.CDLL(os.path.join(os.path.dirname(__file__), 'libruen_v2.dylib'))
         lib.ruen_enable.argtypes = [ctypes.c_char_p]
         lib.ruen_enable.restype = ctypes.c_int

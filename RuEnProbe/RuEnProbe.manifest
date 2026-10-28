@@ -1,1 +1,12 @@
-{"autodeskProduct":"Fusion360","type":"addin","id":"a755fa6f-7b15-45ac-9f37-47649c1791b4","author":"RuEn","description":{"":"Russian keyboard support for assigned Fusion shortcuts"},"version":"0.4.0","runOnStartup":false,"supportedOS":"mac"}
+{
+  "autodeskProduct": "Fusion360",
+  "type": "addin",
+  "id": "a755fa6f-7b15-45ac-9f37-47649c1791b4",
+  "author": "RuEn",
+  "description": {
+    "": "Russian keyboard support for assigned Fusion shortcuts"
+  },
+  "version": "0.4.1",
+  "runOnStartup": false,
+  "supportedOS": "mac"
+}
