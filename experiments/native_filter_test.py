@@ -1,8 +1,13 @@
 import ctypes, os, pathlib, sys
 os.environ['QT_QPA_PLATFORM']='offscreen'
-base=pathlib.Path(os.environ['FUSION_FRAMEWORKS'])
-for n in ('QtCore','QtGui','QtWidgets'):
-    ctypes.CDLL(str(base/(n+'.framework')/n),mode=ctypes.RTLD_GLOBAL)
+if sys.platform == 'darwin':
+    base=pathlib.Path(os.environ['FUSION_FRAMEWORKS'])
+    for n in ('QtCore','QtGui','QtWidgets'):
+        ctypes.CDLL(str(base/(n+'.framework')/n),mode=ctypes.RTLD_GLOBAL)
+if sys.platform == 'win32' and os.environ.get('FUSION_QT_DIR'):
+    dll_dir = os.add_dll_directory(os.environ['FUSION_QT_DIR'])
+    for n in ('Qt6Core.dll', 'Qt6Gui.dll', 'Qt6Widgets.dll'):
+        ctypes.CDLL(str(pathlib.Path(os.environ['FUSION_QT_DIR']) / n))
 sys.path.insert(0,os.environ['PYSIDE_SITE'])
 from PySide6.QtCore import QEvent, Qt, QCoreApplication
 from PySide6.QtGui import QKeyEvent, QKeySequence, QShortcut
@@ -11,7 +16,8 @@ app=QApplication([]); w=QWidget(); w.setFocusPolicy(Qt.FocusPolicy.StrongFocus);
 hits=[]; shortcut=QShortcut(QKeySequence('E'),w); shortcut.activated.connect(lambda: hits.append('E'))
 shift_hits=[]; shifted=QShortcut(QKeySequence('Shift+E'),w); shifted.activated.connect(lambda: shift_hits.append('shift+E'))
 unregistered=[]; other=QShortcut(QKeySequence('D'),w); other.activated.connect(lambda: unregistered.append('D'))
-lib=ctypes.CDLL(str(pathlib.Path(__file__).resolve().parents[1]/'RuEnProbe/libruen_v2.dylib')); lib.ruen_enable.argtypes=[ctypes.c_char_p]; lib.ruen_enable.restype=ctypes.c_int; lib.ruen_disable.restype=ctypes.c_int
+name = 'ruen_filter.dll' if sys.platform == 'win32' else 'libruen_v2.dylib'
+lib=ctypes.CDLL(str(pathlib.Path(__file__).resolve().parents[1]/'RuEn'/name)); lib.ruen_enable.argtypes=[ctypes.c_char_p]; lib.ruen_enable.restype=ctypes.c_int; lib.ruen_disable.restype=ctypes.c_int
 class Binding(ctypes.Structure):
  _fields_=[('key',ctypes.c_int),('modifiers',ctypes.c_uint)]
 lib.ruen_set_bindings.argtypes=[ctypes.POINTER(Binding),ctypes.c_int]; lib.ruen_set_bindings.restype=ctypes.c_int

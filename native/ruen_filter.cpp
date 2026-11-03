@@ -10,12 +10,18 @@
 #include <unordered_set>
 #include <cstdint>
 
+#ifdef _WIN32
+#define RUEN_EXPORT __declspec(dllexport)
+#else
+#define RUEN_EXPORT
+#endif
+
 struct Binding { int key; unsigned int modifiers; };
 static std::unordered_set<uint64_t> bindings;
 static uint64_t bindingId(int key, unsigned int modifiers) {
     return (static_cast<uint64_t>(modifiers) << 32) | static_cast<unsigned int>(key);
 }
-extern "C" int ruen_set_bindings(const Binding* entries, int count) {
+extern "C" RUEN_EXPORT int ruen_set_bindings(const Binding* entries, int count) {
     auto* app = QCoreApplication::instance();
     if (!app || QThread::currentThread() != app->thread() || count < 0 || (count && !entries)) return -1;
     std::unordered_set<uint64_t> next;
@@ -55,7 +61,7 @@ private:
     bool sending_ = false;
 };
 static CanvasFilter* filter = nullptr;
-extern "C" int ruen_enable(const char* focusClass) {
+extern "C" RUEN_EXPORT int ruen_enable(const char* focusClass) {
     auto* app = QCoreApplication::instance();
     if (!app || QThread::currentThread() != app->thread() || !focusClass) return -1;
     if (filter) return 0;
@@ -63,7 +69,7 @@ extern "C" int ruen_enable(const char* focusClass) {
     app->installEventFilter(filter);
     return 1;
 }
-extern "C" int ruen_disable() {
+extern "C" RUEN_EXPORT int ruen_disable() {
     auto* app = QCoreApplication::instance();
     if (!app || QThread::currentThread() != app->thread()) return -1;
     if (!filter) return 0;

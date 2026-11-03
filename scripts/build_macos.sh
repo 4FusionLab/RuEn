@@ -7,4 +7,4 @@ clang++ -std=c++17 -arch arm64 -include arm_acle.h -dynamiclib \
   -F"$LIB" -I"$LIB/QtWidgets.framework/Headers" \
   -I"$LIB/QtCore.framework/Headers" -I"$LIB/QtGui.framework/Headers" \
   -framework QtWidgets -framework QtGui -framework QtCore \
-  "$ROOT/native/ruen_filter.cpp" -o "$ROOT/RuEnProbe/libruen_v2.dylib"
+  "$ROOT/native/ruen_filter.cpp" -o "$ROOT/RuEn/libruen_v2.dylib"
