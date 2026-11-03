@@ -23,7 +23,7 @@ jobs:
           path: dist/*.zip
           if-no-files-found: error
   release:
-    if: github.ref == 'refs/tags/v1.0.0'
+    if: github.ref == 'refs/heads/main'
     needs: test
     runs-on: ubuntu-latest
     permissions:
@@ -37,4 +37,5 @@ jobs:
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" dist/*.zip --title "RuEn ${GITHUB_REF_NAME#v}" --notes-file RELEASE_NOTES.md
+        run: gh release create v1.0.0 dist/*.zip --target "$GITHUB_SHA" --title "RuEn 1.0.0" --notes-file RELEASE_NOTES.md
+
