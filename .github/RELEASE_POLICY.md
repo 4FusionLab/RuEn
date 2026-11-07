@@ -19,6 +19,14 @@ This repository follows the organization-wide release contract. The **GitVersion
 6. Avoid opportunistic releases on a routine PR merge. When required release notes or project-specific approval/evidence is absent, skip publication safely rather than inventing notes or issuing an unintended version.
 7. A broken release is corrected by a new patch version. Existing public tags, release notes and downloadable files remain immutable.
 
+## Explicit release trigger (organization-wide)
+
+- A product GitHub Release starts **only** when an immutable version tag `vMAJOR.MINOR.PATCH` (stable) or `vMAJOR.MINOR.PATCH-IDENTIFIER` (prerelease) is deliberately pushed for a tested commit reachable from `main`. Routine branch pushes, PR merges, and manual CI runs are not release triggers. Previously published historical channel classifications are unchanged.
+- GitVersion.Tool **6.8.2** calculates the numeric `MajorMinorPatch`; the version tag must agree. Fusion manifests and ZIP filenames use the numeric version only, while the optional prerelease suffix belongs to the Git tag and GitHub Release metadata.
+- Existing tests, ZIP/manifest and SHA-256 integrity gates, reviewed release notes, native CAD acceptance, platform limitations and project-specific controls still apply. An invalid explicit release attempt must fail safely without publishing.
+- Never create or move version tags implicitly, retarget historical tags, overwrite published assets or mark prereleases Latest.
+- Repositories without an approved distribution pipeline **do not publish** from tags. Enabling publishing requires a separate reviewed PR. Non-release deployments remain independent.
+
 ## Repository-specific publishing gate
 
-Publication is triggered only by a version tag and successful packaging/tests; `v1.0.0` remains immutable. Existing native libraries must be verified before shipping.
+Only an explicit version-tag push initiates publication after native-library packaging and tests succeed. `v1.0.0` stays immutable; the original release-note and checksum rules remain.
