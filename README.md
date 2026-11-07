@@ -34,7 +34,7 @@ To uninstall, stop RuEn, disable **Run on Startup**, remove its entry from Fusio
 
 ## For developers
 
-Python code lives in [`RuEn/`](RuEn/); the native filter is in [`native/ruen_filter.cpp`](native/ruen_filter.cpp). `python scripts/package.py` packages existing libraries into three ZIP archives under `dist/` but does not build them. Build the macOS library with `scripts/build_macos.sh` and `QT_SDK` for Qt 6.8.3, or use `scripts/build_windows.ps1` with MSVC x64 and a compatible Qt 6.8.1 SDK. `experiments/native_filter_test.py` is a separate PySide experiment and is not included in the distribution.
+Python code lives in [`RuEn/`](RuEn/); the native filter is in [`native/ruen_filter.cpp`](native/ruen_filter.cpp). `python scripts/package.py --version X.Y.Z` packages existing libraries into three versioned ZIP archives with SHA-256 checksums under `dist/` but does not build them. CI supplies `X.Y.Z` from GitVersion; the manifest inside each ZIP is updated without modifying the checked-in manifest. Build the macOS library with `scripts/build_macos.sh` and `QT_SDK` for Qt 6.8.3, or use `scripts/build_windows.ps1` with MSVC x64 and a compatible Qt 6.8.1 SDK. `experiments/native_filter_test.py` is a separate PySide experiment and is not included in the distribution.
 
 ## More Fusion 360 tools from 4FusionLab
 
