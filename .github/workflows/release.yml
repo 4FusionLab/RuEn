@@ -1,6 +1,7 @@
 name: Test and release
 on:
   push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
 
@@ -8,7 +9,27 @@ permissions:
   contents: read
 
 jobs:
+  changes:
+    name: Check runtime changes
+    runs-on: ubuntu-latest
+    outputs:
+      release: ${{ steps.impact.outputs.release }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - run: python scripts/release_changes.py --self-test
+      - name: Detect addon changes
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        id: impact
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: python scripts/release_changes.py --before "$BEFORE" --after "$GITHUB_SHA" --github-output "$GITHUB_OUTPUT"
   test:
+    needs: changes
+    outputs:
+      version: ${{ steps.version.outputs.version }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -19,15 +40,6 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
-      - name: Verify version tag is reachable from main
-        if: startsWith(github.ref, 'refs/tags/v')
-        shell: bash
-        run: |
-          set -euo pipefail
-          git merge-base --is-ancestor "$GITHUB_SHA" origin/main || {
-            echo "Release tag must point to a commit reachable from main." >&2
-            exit 1
-          }
       - name: Derive package version from GitVersion
         id: version
         shell: bash
@@ -43,23 +55,21 @@ jobs:
           set -euo pipefail
           python -m unittest discover -s tests -v
           python scripts/package.py --version "${{ steps.version.outputs.version }}"
-      - name: Require reviewed notes and verify tagged release candidate
-        if: startsWith(github.ref, 'refs/tags/v')
+      - name: Validate release candidate when runtime changed
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.release == 'true'
         shell: bash
         env:
           VERSION: ${{ steps.version.outputs.version }}
         run: |
           set -euo pipefail
-          channel=stable
-          if [[ "$GITHUB_REF_NAME" != "v$VERSION" ]]; then channel=prerelease; fi
-          notes="docs/releases/$VERSION.md"
-          if [[ "$VERSION" == "1.0.0" ]]; then notes=RELEASE_NOTES.md; fi
-          python scripts/release_contract.py --version "$VERSION" --tag "$GITHUB_REF_NAME" \
-            --channel "$channel" --manifest RuEn/RuEn.manifest \
+          python scripts/release_notes.py --product RuEn --version "$VERSION" \
+            --output "$RUNNER_TEMP/release-notes.md" --candidate "docs/releases/$VERSION.md"
+          python scripts/release_contract.py --version "$VERSION" --tag "v$VERSION" \
+            --channel stable --manifest RuEn/RuEn.manifest \
             --archive "dist/RuEn-$VERSION-universal.zip" \
             --archive "dist/RuEn-$VERSION-macos.zip" \
             --archive "dist/RuEn-$VERSION-windows.zip" \
-            --notes "$notes"
+            --notes "$RUNNER_TEMP/release-notes.md"
       - uses: actions/upload-artifact@v4
         with:
           name: RuEn-distributions
@@ -69,8 +79,8 @@ jobs:
           if-no-files-found: error
 
   release:
-    if: startsWith(github.ref, 'refs/tags/v')
-    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.release == 'true'
+    needs: [test, changes]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -87,32 +97,32 @@ jobs:
         with:
           name: RuEn-distributions
           path: dist
-      - name: Verify and publish immutable release
+      - name: Verify packages and publish immutable release
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.test.outputs.version }}
         run: |
           set -euo pipefail
-          version="${GITHUB_REF_NAME#v}"
-          version="${version%%-*}"
-          channel=stable
-          notes="docs/releases/$version.md"
-          flags=(--latest)
-          if [[ "$GITHUB_REF_NAME" != "v$version" ]]; then
-            channel=prerelease
-            flags=(--prerelease --latest=false)
+          tag="v$VERSION"
+          python scripts/release_notes.py --product RuEn --version "$VERSION" \
+            --output "$RUNNER_TEMP/release-notes.md" --candidate "docs/releases/$VERSION.md"
+          python scripts/release_contract.py --version "$VERSION" --tag "$tag" \
+            --channel stable --manifest RuEn/RuEn.manifest \
+            --archive "dist/RuEn-$VERSION-universal.zip" \
+            --archive "dist/RuEn-$VERSION-macos.zip" \
+            --archive "dist/RuEn-$VERSION-windows.zip" \
+            --notes "$RUNNER_TEMP/release-notes.md"
+          if git rev-parse -q --verify "refs/tags/$tag^{commit}" >/dev/null; then
+            test "$(git rev-parse "$tag^{commit}")" = "$GITHUB_SHA" || {
+              echo "Immutable version tag belongs to another commit: $tag" >&2
+              exit 1
+            }
           fi
-          if [[ "$version" == "1.0.0" ]]; then notes=RELEASE_NOTES.md; fi
-          python scripts/release_contract.py --version "$version" --tag "$GITHUB_REF_NAME" \
-            --channel "$channel" --manifest RuEn/RuEn.manifest \
-            --archive "dist/RuEn-$version-universal.zip" \
-            --archive "dist/RuEn-$version-macos.zip" \
-            --archive "dist/RuEn-$version-windows.zip" \
-            --notes "$notes"
-          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
-            echo "Release $GITHUB_REF_NAME already exists; leave assets unchanged."
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "Already published: $tag"
             exit 0
           fi
-          gh release create "$GITHUB_REF_NAME" dist/*.zip dist/*.sha256 \
-            --verify-tag --target "$GITHUB_SHA" \
-            --title "RuEn $GITHUB_REF_NAME" --notes-file "$notes" "${flags[@]}"
+          gh release create "$tag" dist/*.zip dist/*.sha256 \
+            --target "$GITHUB_SHA" --title "RuEn $tag" \
+            --notes-file "$RUNNER_TEMP/release-notes.md" --latest

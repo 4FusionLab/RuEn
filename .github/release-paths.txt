@@ -1,0 +1,6 @@
+# Add-in, native binaries/sources, and platform packaging.
+RuEn/**
+native/**
+scripts/build_macos.sh
+scripts/build_windows.ps1
+scripts/package.py
