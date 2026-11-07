@@ -56,6 +56,14 @@ jobs:
           set -euo pipefail
           python -m unittest discover -s tests -v
           python scripts/package.py --version "${{ steps.version.outputs.version }}"
+      - name: Generate release notes for validation (shared platform)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.release == 'true'
+        uses: 4FusionLab/.github/.github/actions/release-notes@ad9d60ba4aabc494b4f2c85d6c566a50ca423751
+        with:
+          product: RuEn
+          version: ${{ steps.version.outputs.version }}
+          candidate: docs/releases/${{ steps.version.outputs.version }}.md
+          output: ${{ runner.temp }}/release-notes.md
       - name: Validate release candidate when runtime changed
         if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.release == 'true'
         shell: bash
@@ -63,8 +71,6 @@ jobs:
           VERSION: ${{ steps.version.outputs.version }}
         run: |
           set -euo pipefail
-          python scripts/release_notes.py --product RuEn --version "$VERSION" \
-            --output "$RUNNER_TEMP/release-notes.md" --candidate "docs/releases/$VERSION.md"
           python scripts/release_contract.py --version "$VERSION" --tag "v$VERSION" \
             --channel stable --manifest RuEn/RuEn.manifest \
             --archive "dist/RuEn-$VERSION-universal.zip" \
@@ -98,6 +104,24 @@ jobs:
         with:
           name: RuEn-distributions
           path: dist
+      - name: Generate release notes for publication (shared platform)
+        uses: 4FusionLab/.github/.github/actions/release-notes@ad9d60ba4aabc494b4f2c85d6c566a50ca423751
+        with:
+          product: RuEn
+          version: ${{ needs.test.outputs.version }}
+          candidate: docs/releases/${{ needs.test.outputs.version }}.md
+          output: ${{ runner.temp }}/release-notes.md
+      - name: Verify platform ZIPs (shared platform)
+        uses: 4FusionLab/.github/.github/actions/verify-archive@ad9d60ba4aabc494b4f2c85d6c566a50ca423751
+        with:
+          product: RuEn
+          version: ${{ needs.test.outputs.version }}
+          archives: |
+            dist/RuEn-${{ needs.test.outputs.version }}-universal.zip
+            dist/RuEn-${{ needs.test.outputs.version }}-macos.zip
+            dist/RuEn-${{ needs.test.outputs.version }}-windows.zip
+          manifest: RuEn/RuEn.manifest
+          notes: ${{ runner.temp }}/release-notes.md
       - name: Verify packages and publish immutable release
         shell: bash
         env:
@@ -106,8 +130,6 @@ jobs:
         run: |
           set -euo pipefail
           tag="v$VERSION"
-          python scripts/release_notes.py --product RuEn --version "$VERSION" \
-            --output "$RUNNER_TEMP/release-notes.md" --candidate "docs/releases/$VERSION.md"
           python scripts/release_contract.py --version "$VERSION" --tag "$tag" \
             --channel stable --manifest RuEn/RuEn.manifest \
             --archive "dist/RuEn-$VERSION-universal.zip" \
