@@ -2,3 +2,4 @@
 # Native source-only edits require updated shipped DLL/dylib before a release.
 RuEn/**
 scripts/package.py
+LICENSE

@@ -14,6 +14,9 @@ root = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--version', help='GitVersion MajorMinorPatch for release packages')
 args = parser.parse_args()
+license_file = root / 'LICENSE'
+if not license_file.is_file() or not license_file.read_text(encoding='utf-8').strip():
+    parser.error('Distribution license must exist and be nonempty')
 manifest_file = root / 'RuEn/RuEn.manifest'
 manifest = json.loads(manifest_file.read_text(encoding='utf-8'))
 version = args.version or manifest['version']
