@@ -56,6 +56,16 @@ jobs:
           set -euo pipefail
           python -m unittest discover -s tests -v
           python scripts/package.py --version "${{ steps.version.outputs.version }}"
+      - name: Verify all tested platform ZIPs and checksums (shared contract)
+        uses: 4FusionLab/.github/.github/actions/verify-archive@ad9d60ba4aabc494b4f2c85d6c566a50ca423751
+        with:
+          product: RuEn
+          version: ${{ steps.version.outputs.version }}
+          archives: |
+            dist/RuEn-${{ steps.version.outputs.version }}-universal.zip
+            dist/RuEn-${{ steps.version.outputs.version }}-macos.zip
+            dist/RuEn-${{ steps.version.outputs.version }}-windows.zip
+          manifest: RuEn/RuEn.manifest
       - name: Generate release notes for validation (shared platform)
         if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.release == 'true'
         uses: 4FusionLab/.github/.github/actions/release-notes@ad9d60ba4aabc494b4f2c85d6c566a50ca423751
