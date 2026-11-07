@@ -23,13 +23,15 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - run: python scripts/release_changes.py --self-test
-      - name: Detect addon changes
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      - name: Detect runtime changes (shared platform)
         id: impact
-        env:
-          BEFORE: ${{ github.event.before }}
-        run: python scripts/release_changes.py --before "$BEFORE" --after "$GITHUB_SHA" --github-output "$GITHUB_OUTPUT"
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: 4FusionLab/.github/.github/actions/runtime-changes@ad9d60ba4aabc494b4f2c85d6c566a50ca423751
+        with:
+          before: ${{ github.event.before }}
+          after: ${{ github.sha }}
+          paths-file: .github/release-paths.txt
+
   test:
     needs: changes
     outputs:
@@ -44,15 +46,10 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
-      - name: Derive package version from GitVersion
-        id: version
-        shell: bash
-        run: |
-          set -euo pipefail
-          dotnet tool install GitVersion.Tool --tool-path "$RUNNER_TEMP/gitversion" --version 6.8.2
-          version="$("$RUNNER_TEMP/gitversion/dotnet-gitversion" /showvariable MajorMinorPatch)"
-          [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
-          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - name: Resolve GitVersion (shared platform)
+        id: gitversion
+        uses: 4FusionLab/.github/.github/actions/resolve-version@ad9d60ba4aabc494b4f2c85d6c566a50ca423751
+
       - name: Check Python and package all platform ZIPs
         shell: bash
         run: |
