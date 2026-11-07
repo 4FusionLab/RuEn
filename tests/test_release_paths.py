@@ -44,6 +44,7 @@ RUNTIME_INPUTS = (
         "RuEn/libruen_v2.dylib",
         "RuEn/ruen_filter.dll",
         "scripts/package.py",
+        "LICENSE",
 )
 
 NON_RUNTIME_INPUTS = (
