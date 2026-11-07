@@ -1,6 +1,4 @@
-# Add-in, native binaries/sources, and platform packaging.
+# Shipped Fusion add-in code, checked-in native binaries, and packaging.
+# Native source-only edits require updated shipped DLL/dylib before a release.
 RuEn/**
-native/**
-scripts/build_macos.sh
-scripts/build_windows.ps1
 scripts/package.py
