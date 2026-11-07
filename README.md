@@ -43,3 +43,5 @@ Python code lives in [`RuEn/`](RuEn/); the native filter is in [`native/ruen_fil
 [Release notes](RELEASE_NOTES.md) · [License](LICENSE) · [4FusionLab](https://github.com/4FusionLab)
 
 <sub>Independent project, not affiliated with or endorsed by Autodesk.</sub>
+
+Commercial use outside the permitted purposes requires a separate agreement with 4FusionLab.
