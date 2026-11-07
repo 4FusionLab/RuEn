@@ -16,6 +16,6 @@
 
 ## This repository
 
-Runtime allowlist: `RuEn/**`, `native/**`, platform build scripts, `scripts/package.py`. Check three platform ZIPs and checksum integrity.
+Runtime allowlist: `RuEn/**` (including shipped native DLL/dylib binaries) and `scripts/package.py`. Native source/build-script-only changes do not affect distributed binaries until those binaries are rebuilt and committed. Check three platform ZIPs and checksum integrity.
 
 If a push changes no eligible runtime file, CI may run but the GitHub Release job is skipped, even when GitVersion computes a different candidate version.
