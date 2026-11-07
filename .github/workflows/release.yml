@@ -47,7 +47,7 @@ jobs:
         with:
           python-version: '3.11'
       - name: Resolve GitVersion (shared platform)
-        id: gitversion
+        id: version
         uses: 4FusionLab/.github/.github/actions/resolve-version@ad9d60ba4aabc494b4f2c85d6c566a50ca423751
 
       - name: Check Python and package all platform ZIPs
