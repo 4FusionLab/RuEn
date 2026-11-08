@@ -1,5 +1,7 @@
 # RuEn 1.0.0
 
-RuEn помогает использовать назначенные буквенные горячие клавиши Autodesk Fusion при русской раскладке. Релиз поддерживает macOS Apple Silicon и Windows x64 и включает универсальный архив с автоматическим выбором библиотеки и отдельные архивы для каждой платформы.
+[Русская версия](RELEASE_NOTES.ru.md)
 
-Папка и точка входа переименованы из RuEnProbe в RuEn; идентификатор manifest сохранён. При обновлении остановите старый аддин и отключите его автозапуск перед добавлением нового. Включите **Run on Startup** в Fusion.
+RuEn helps you use assigned Autodesk Fusion letter shortcuts with the Russian keyboard layout. This release supports macOS Apple Silicon and Windows x64 and includes a universal archive that selects the library automatically, plus separate archives for each platform.
+
+The folder and entry point were renamed from RuEnProbe to RuEn; the manifest identifier is unchanged. When upgrading, stop the old add-in and disable its automatic startup before adding the new one. Enable **Run on Startup** in Fusion.
