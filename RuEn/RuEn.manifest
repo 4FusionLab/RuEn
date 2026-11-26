@@ -2,7 +2,7 @@
   "autodeskProduct": "Fusion360",
   "type": "addin",
   "id": "a755fa6f-7b15-45ac-9f37-47649c1791b4",
-  "author": "RuEn",
+  "author": "Pavel Kuznetsov",
   "description": {
     "": "Russian keyboard support for assigned Fusion shortcuts"
   },
